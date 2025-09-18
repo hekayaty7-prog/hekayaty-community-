@@ -1,16 +1,23 @@
-import { Users } from 'lucide-react';
+import { Users, Heart, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Post } from '@shared/schema';
 import { useCommunity } from '@/contexts/CommunityContext';
+import { useState } from 'react';
 
 interface WorkshopPostProps {
   post: Post;
 }
 
 export function WorkshopPost({ post }: WorkshopPostProps) {
-  const { joinWorkshop } = useCommunity();
+  const { joinWorkshop, likePost } = useCommunity();
   const metadata = post.metadata as any;
+  const [localLikes, setLocalLikes] = useState(post.likes);
+  
+  const handleLike = () => {
+    likePost(post.id);
+    setLocalLikes(prev => prev + 1);
+  };
 
   return (
     <article className="bg-card border border-border rounded-lg p-6 hover:border-primary/20 transition-colors" data-testid={`workshop-post-${post.id}`}>
@@ -68,12 +75,16 @@ export function WorkshopPost({ post }: WorkshopPostProps) {
           
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
-              <button className="flex items-center space-x-2 text-muted-foreground hover:text-destructive transition-colors" data-testid={`workshop-like-${post.id}`}>
-                <i className="fas fa-heart"></i>
-                <span className="text-sm">{post.likes}</span>
+              <button 
+                onClick={handleLike}
+                className="flex items-center space-x-2 text-muted-foreground hover:text-destructive transition-colors" 
+                data-testid={`workshop-like-${post.id}`}
+              >
+                <Heart className="h-4 w-4" />
+                <span className="text-sm">{localLikes}</span>
               </button>
               <button className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors" data-testid={`workshop-comment-${post.id}`}>
-                <i className="fas fa-comment"></i>
+                <MessageCircle className="h-4 w-4" />
                 <span className="text-sm">{post.replies} replies</span>
               </button>
             </div>

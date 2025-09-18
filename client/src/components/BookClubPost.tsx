@@ -1,16 +1,23 @@
-import { Users } from 'lucide-react';
+import { Users, Heart, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PostCard } from './PostCard';
 import { Post } from '@shared/schema';
 import { useCommunity } from '@/contexts/CommunityContext';
+import { useState } from 'react';
 
 interface BookClubPostProps {
   post: Post;
 }
 
 export function BookClubPost({ post }: BookClubPostProps) {
-  const { joinBookClub } = useCommunity();
+  const { joinBookClub, likePost } = useCommunity();
   const metadata = post.metadata as any;
+  const [localLikes, setLocalLikes] = useState(post.likes);
+  
+  const handleLike = () => {
+    likePost(post.id);
+    setLocalLikes(prev => prev + 1);
+  };
 
   return (
     <article className="bg-card border border-border rounded-lg p-6 hover:border-primary/20 transition-colors" data-testid={`book-club-post-${post.id}`}>
@@ -67,12 +74,16 @@ export function BookClubPost({ post }: BookClubPostProps) {
           
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-6">
-              <button className="flex items-center space-x-2 text-muted-foreground hover:text-destructive transition-colors" data-testid={`book-club-like-${post.id}`}>
-                <i className="fas fa-heart"></i>
-                <span className="text-sm">{post.likes}</span>
+              <button 
+                onClick={handleLike}
+                className="flex items-center space-x-2 text-muted-foreground hover:text-destructive transition-colors" 
+                data-testid={`book-club-like-${post.id}`}
+              >
+                <Heart className="h-4 w-4" />
+                <span className="text-sm">{localLikes}</span>
               </button>
               <button className="flex items-center space-x-2 text-muted-foreground hover:text-primary transition-colors" data-testid={`book-club-comment-${post.id}`}>
-                <i className="fas fa-comment"></i>
+                <MessageCircle className="h-4 w-4" />
                 <span className="text-sm">{post.replies} replies</span>
               </button>
               <span className="flex items-center space-x-2 text-muted-foreground" data-testid={`book-club-members-${post.id}`}>

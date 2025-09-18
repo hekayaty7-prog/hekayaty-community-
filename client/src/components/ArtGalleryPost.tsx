@@ -2,6 +2,8 @@ import { Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Post } from '@shared/schema';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface ArtGalleryPostProps {
   post: Post;
@@ -9,9 +11,12 @@ interface ArtGalleryPostProps {
 
 export function ArtGalleryPost({ post }: ArtGalleryPostProps) {
   const metadata = post.metadata as any;
+  const [showGalleryModal, setShowGalleryModal] = useState(false);
+  const [showCommissionModal, setShowCommissionModal] = useState(false);
 
   return (
-    <article className="bg-card border border-border rounded-lg p-6 hover:border-primary/20 transition-colors" data-testid={`art-gallery-post-${post.id}`}>
+    <>
+      <article className="bg-card border border-border rounded-lg p-6 hover:border-primary/20 transition-colors" data-testid={`art-gallery-post-${post.id}`}>
       <div className="flex items-start space-x-4">
         <img 
           src={metadata?.author?.avatar} 
@@ -36,7 +41,11 @@ export function ArtGalleryPost({ post }: ArtGalleryPostProps) {
             </span>
           </div>
           
-          <h2 className="text-xl font-bold text-foreground mb-3 hover:text-primary cursor-pointer transition-colors" data-testid={`art-gallery-title-${post.id}`}>
+          <h2 
+            onClick={() => setShowGalleryModal(true)}
+            className="text-xl font-bold text-foreground mb-3 hover:text-primary cursor-pointer transition-colors" 
+            data-testid={`art-gallery-title-${post.id}`}
+          >
             {post.title}
           </h2>
           
@@ -47,7 +56,8 @@ export function ArtGalleryPost({ post }: ArtGalleryPostProps) {
                   key={index}
                   src={image} 
                   alt={`Character Portrait ${index + 1}`} 
-                  className="rounded-lg object-cover aspect-square"
+                  className="rounded-lg object-cover aspect-square cursor-pointer hover:opacity-80 transition-opacity"
+                  onClick={() => setShowGalleryModal(true)}
                   data-testid={`art-gallery-image-${post.id}-${index}`}
                 />
               ))}
@@ -78,12 +88,17 @@ export function ArtGalleryPost({ post }: ArtGalleryPostProps) {
                 <i className="fas fa-comment"></i>
                 <span className="text-sm">{post.replies} replies</span>
               </button>
-              <button className="flex items-center space-x-2 text-muted-foreground hover:text-accent transition-colors" data-testid={`art-gallery-view-${post.id}`}>
+              <button 
+                onClick={() => setShowGalleryModal(true)}
+                className="flex items-center space-x-2 text-muted-foreground hover:text-accent transition-colors" 
+                data-testid={`art-gallery-view-${post.id}`}
+              >
                 <Eye className="h-4 w-4" />
                 <span className="text-sm">View Gallery</span>
               </button>
             </div>
             <Button 
+              onClick={() => setShowCommissionModal(true)}
               variant="outline" 
               className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
               data-testid={`art-gallery-commission-${post.id}`}
@@ -94,5 +109,75 @@ export function ArtGalleryPost({ post }: ArtGalleryPostProps) {
         </div>
       </div>
     </article>
+    
+    {/* Gallery Modal */}
+    <Dialog open={showGalleryModal} onOpenChange={setShowGalleryModal}>
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" data-testid="art-gallery-detail">
+        <DialogHeader>
+          <DialogTitle>Art Gallery - {post.title}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            {post.images && post.images.map((image, index) => (
+              <img 
+                key={index}
+                src={image} 
+                alt={`Artwork ${index + 1}`} 
+                className="rounded-lg object-cover w-full h-64"
+              />
+            ))}
+          </div>
+          <div>
+            <h3 className="font-semibold mb-2">About this artwork</h3>
+            <p className="text-muted-foreground">{post.content}</p>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+    
+    {/* Commission Modal */}
+    <Dialog open={showCommissionModal} onOpenChange={setShowCommissionModal}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Commission {metadata?.author?.name}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <p className="text-muted-foreground">
+            Interested in commissioning artwork from {metadata?.author?.name}? 
+            Send them a message with your project details.
+          </p>
+          <div className="grid gap-4">
+            <div>
+              <label className="text-sm font-medium">Project Type</label>
+              <select className="w-full mt-1 p-2 border rounded-md">
+                <option>Character Design</option>
+                <option>Book Cover</option>
+                <option>Illustration</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Budget Range</label>
+              <select className="w-full mt-1 p-2 border rounded-md">
+                <option>$50-100</option>
+                <option>$100-250</option>
+                <option>$250-500</option>
+                <option>$500+</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Project Description</label>
+              <textarea 
+                className="w-full mt-1 p-2 border rounded-md" 
+                rows={4}
+                placeholder="Describe your project..."
+              />
+            </div>
+            <Button className="w-full">Send Commission Request</Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+    </>
   );
 }
