@@ -93,3 +93,65 @@ export type InsertBookClub = z.infer<typeof insertBookClubSchema>;
 export type BookClub = typeof bookClubs.$inferSelect;
 export type InsertWorkshop = z.infer<typeof insertWorkshopSchema>;
 export type Workshop = typeof workshops.$inferSelect;
+
+// ---------- Community Discussion ----------
+export const threads = pgTable("threads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  category: text("category"),
+  tags: text("tags").array().default([]),
+  images: text("images").array().default([]),
+  likes: integer("likes").default(0),
+  comments: integer("comments").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const comments = pgTable("comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  threadId: varchar("thread_id").references(() => threads.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  parentId: varchar("parent_id"), // nullable for top-level
+  content: text("content").notNull(),
+  likes: integer("likes").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertThreadSchema = createInsertSchema(threads).pick({
+  title: true,
+  content: true,
+  category: true,
+  tags: true,
+  images: true,
+});
+
+export const insertCommentSchema = createInsertSchema(comments).pick({
+  threadId: true,
+  parentId: true,
+  content: true,
+});
+
+export type InsertThread = z.infer<typeof insertThreadSchema>;
+export type Thread = typeof threads.$inferSelect;
+export type InsertComment = z.infer<typeof insertCommentSchema>;
+export type Comment = typeof comments.$inferSelect;
+
+// Workshop Comments
+export const workshopComments = pgTable("workshop_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  postId: varchar("post_id").references(() => posts.id).notNull(),
+  userId: varchar("user_id").references(() => users.id).notNull(),
+  content: text("content").notNull(),
+  likes: integer("likes").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertWorkshopCommentSchema = createInsertSchema(workshopComments).pick({
+  postId: true,
+  content: true,
+});
+
+export type InsertWorkshopComment = z.infer<typeof insertWorkshopCommentSchema>;
+export type WorkshopComment = typeof workshopComments.$inferSelect;

@@ -1,28 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import './styles/mobile.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --background: hsl(240, 10%, 98%);
-  --foreground: hsl(240, 10%, 9%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(240, 10%, 9%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(240, 10%, 9%);
-  --primary: hsl(239, 69%, 65%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(240, 5%, 96%);
-  --secondary-foreground: hsl(240, 6%, 10%);
-  --muted: hsl(240, 5%, 96%);
-  --muted-foreground: hsl(240, 4%, 46%);
-  --accent: hsl(43, 85%, 58%);
-  --accent-foreground: hsl(240, 6%, 10%);
-  --destructive: hsl(0, 84%, 60%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 6%, 90%);
-  --input: hsl(240, 6%, 90%);
-  --ring: hsl(239, 69%, 65%);
+  /* Professional Brown & Yellow theme */
+  --background: #1e1407; /* rich espresso brown */
+  --foreground: #ffffff; /* crisp white text */
+  --card: #2a1908; /* deep chocolate brown */
+  --card-foreground: #ffffff;
+  --popover: #35210a; /* slightly lighter for popovers */
+  --popover-foreground: #ffffff;
+  --primary: #f3c761; /* refined golden yellow for primary accents */
+  --primary-foreground: #1e1407;
+  --secondary: #4a2e14; /* mid-tone roasted brown */
+  --secondary-foreground: #ffffff;
+  --muted: #5c3e1d; /* muted brown for subtle UI */
+  --muted-foreground: #e9d9c3;
+  --accent: #e0ac4f; /* complementary warm yellow */
+  --accent-foreground: #1e1407;
+  --destructive: #c04646;
+  --destructive-foreground: #ffffff;
+  --border: #3e2812;
+  --input: #3e2812;
+  --ring: #f3c761;
   --radius: 8px;
   --font-sans: "Inter", sans-serif;
   --font-serif: Georgia, serif;
@@ -30,24 +32,24 @@
 }
 
 .dark {
-  --background: hsl(240, 10%, 4%);
-  --foreground: hsl(0, 0%, 95%);
+  --background: hsl(30, 10%, 4%);
+  --foreground: hsl(30, 20%, 90%);
   --card: hsl(240, 10%, 6%);
   --card-foreground: hsl(0, 0%, 95%);
   --popover: hsl(240, 10%, 6%);
   --popover-foreground: hsl(0, 0%, 95%);
   --primary: hsl(239, 69%, 65%);
   --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(240, 4%, 16%);
+  --secondary: hsl(30, 15%, 12%);
   --secondary-foreground: hsl(0, 0%, 95%);
-  --muted: hsl(240, 4%, 16%);
+  --muted: hsl(30, 10%, 15%);
   --muted-foreground: hsl(240, 5%, 65%);
   --accent: hsl(43, 85%, 58%);
   --accent-foreground: hsl(240, 6%, 10%);
   --destructive: hsl(0, 84%, 60%);
   --destructive-foreground: hsl(0, 0%, 98%);
-  --border: hsl(240, 4%, 16%);
-  --input: hsl(240, 4%, 16%);
+  --border: hsl(30, 10%, 15%);
+  --input: hsl(30, 10%, 15%);
   --ring: hsl(239, 69%, 65%);
 }
 
@@ -57,6 +59,11 @@
   }
 
   body {
-    @apply font-sans antialiased bg-background text-foreground;
+    @apply font-sans antialiased text-foreground;
+    background-color: var(--background);
+    background-image: url('/src/assets/c79d8e3c-1594-4711-97bf-606619c10341.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
   }
 }

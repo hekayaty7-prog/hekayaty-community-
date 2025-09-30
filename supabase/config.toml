@@ -1,0 +1,58 @@
+# =====================================================
+# SUPABASE CONFIGURATION
+# =====================================================
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[auth]
+enabled = true
+port = 54322
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["https://localhost:3000"]
+jwt_expiry = 3600
+refresh_token_rotation_enabled = true
+security_update_password_require_reauthentication = true
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+redirect_uri = "http://localhost:54321/auth/v1/callback"
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[functions]
+verify_jwt = false
+
+[storage]
+enabled = true
+port = 54323
+file_size_limit = "50MiB"
+buckets = [
+  { name = "avatars", public = true },
+  { name = "artworks", public = true },
+  { name = "workshop-files", public = false }
+]
+
+[edge_runtime]
+policy = "per_worker"
+inspector_port = 8083
+
+[analytics]
+enabled = false
+
+[inbound_mail]
+enabled = false

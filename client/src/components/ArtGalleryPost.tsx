@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Post } from '@shared/schema';
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 
 interface ArtGalleryPostProps {
   post: Post;
@@ -115,6 +115,9 @@ export function ArtGalleryPost({ post }: ArtGalleryPostProps) {
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" data-testid="art-gallery-detail">
         <DialogHeader>
           <DialogTitle>Art Gallery - {post.title}</DialogTitle>
+          <DialogDescription>
+            View artwork details and information
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
@@ -140,6 +143,9 @@ export function ArtGalleryPost({ post }: ArtGalleryPostProps) {
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Commission {metadata?.author?.name}</DialogTitle>
+          <DialogDescription>
+            Send a commission request to this artist
+          </DialogDescription>
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-muted-foreground">

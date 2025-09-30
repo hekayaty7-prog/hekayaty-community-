@@ -1,0 +1,221 @@
+/* Mobile and Touch Optimizations for StoryWeaveConnect */
+
+/* Touch-friendly interactions */
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Minimum touch target sizes (44px recommended) */
+button, 
+.touch-target,
+[role="button"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Mobile-specific button padding */
+@media (max-width: 640px) {
+  button {
+    padding: 12px 16px;
+  }
+  
+  .btn-sm {
+    padding: 8px 12px;
+    min-height: 36px;
+  }
+  
+  .btn-lg {
+    padding: 16px 24px;
+    min-height: 48px;
+  }
+}
+
+/* Improved scrolling on mobile */
+.scroll-smooth {
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Mobile modal optimizations */
+@media (max-width: 768px) {
+  [role="dialog"] {
+    margin: 8px;
+    max-height: calc(100vh - 16px);
+    width: calc(100vw - 16px);
+  }
+}
+
+/* Mobile navigation improvements */
+@media (max-width: 1024px) {
+  .mobile-nav-item {
+    padding: 16px 20px;
+    font-size: 18px;
+    line-height: 1.5;
+  }
+}
+
+/* Touch-friendly form inputs */
+input, 
+textarea, 
+select {
+  font-size: 16px; /* Prevents zoom on iOS */
+  padding: 12px 16px;
+}
+
+@media (max-width: 640px) {
+  input, 
+  textarea, 
+  select {
+    padding: 14px 16px;
+    border-radius: 8px;
+  }
+}
+
+/* Mobile-optimized grid layouts */
+@media (max-width: 640px) {
+  .mobile-grid-1 {
+    grid-template-columns: 1fr;
+  }
+  
+  .mobile-grid-2 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Improved mobile spacing */
+@media (max-width: 640px) {
+  .mobile-spacing {
+    padding: 16px;
+    gap: 16px;
+  }
+  
+  .mobile-spacing-sm {
+    padding: 12px;
+    gap: 12px;
+  }
+  
+  .mobile-spacing-lg {
+    padding: 24px;
+    gap: 24px;
+  }
+}
+
+/* Mobile-friendly card layouts */
+@media (max-width: 640px) {
+  .mobile-card {
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+}
+
+/* Responsive text sizes */
+@media (max-width: 640px) {
+  .mobile-text-xs { font-size: 12px; }
+  .mobile-text-sm { font-size: 14px; }
+  .mobile-text-base { font-size: 16px; }
+  .mobile-text-lg { font-size: 18px; }
+  .mobile-text-xl { font-size: 20px; }
+  .mobile-text-2xl { font-size: 24px; }
+  .mobile-text-3xl { font-size: 30px; }
+}
+
+/* Mobile-optimized shadows */
+@media (max-width: 640px) {
+  .mobile-shadow {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  .mobile-shadow-lg {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Safe area insets for mobile devices */
+@supports (padding: max(0px)) {
+  .safe-area-inset-top {
+    padding-top: max(16px, env(safe-area-inset-top));
+  }
+  
+  .safe-area-inset-bottom {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+  
+  .safe-area-inset-left {
+    padding-left: max(16px, env(safe-area-inset-left));
+  }
+  
+  .safe-area-inset-right {
+    padding-right: max(16px, env(safe-area-inset-right));
+  }
+}
+
+/* Mobile-optimized animations */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Mobile hover states (only on devices that support hover) */
+@media (hover: hover) and (pointer: fine) {
+  .hover-scale:hover {
+    transform: scale(1.05);
+  }
+  
+  .hover-lift:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Mobile-specific utilities */
+@media (max-width: 640px) {
+  .mobile-hidden {
+    display: none !important;
+  }
+  
+  .mobile-block {
+    display: block !important;
+  }
+  
+  .mobile-flex {
+    display: flex !important;
+  }
+  
+  .mobile-full-width {
+    width: 100% !important;
+  }
+}
+
+/* Improved mobile scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Mobile-optimized focus states */
+@media (max-width: 640px) {
+  button:focus,
+  input:focus,
+  textarea:focus,
+  select:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+}

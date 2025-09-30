@@ -2,7 +2,7 @@ import { Users, Heart, MessageCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PostCard } from './PostCard';
 import { Post } from '@shared/schema';
-import { useCommunity } from '@/contexts/CommunityContext';
+import { useCommunity } from '@/contexts/SupabaseCommunityContext';
 import { useState } from 'react';
 
 interface BookClubPostProps {
@@ -10,13 +10,17 @@ interface BookClubPostProps {
 }
 
 export function BookClubPost({ post }: BookClubPostProps) {
-  const { joinBookClub, likePost } = useCommunity();
+  const { } = useCommunity();
+  
+  // Placeholder functions for features not yet implemented
+  const joinBookClub = (clubId: string) => console.log('Join club:', clubId);
+  const likePost = (postId: string) => console.log('Like post:', postId);
   const metadata = post.metadata as any;
   const [localLikes, setLocalLikes] = useState(post.likes);
   
   const handleLike = () => {
     likePost(post.id);
-    setLocalLikes(prev => prev + 1);
+    setLocalLikes(prev => (prev ?? 0) + 1);
   };
 
   return (

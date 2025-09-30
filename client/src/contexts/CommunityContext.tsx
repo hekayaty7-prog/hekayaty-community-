@@ -19,7 +19,13 @@ interface CommunityContextType {
   bookmarkPost: (postId: string) => void;
   followUser: (userId: string) => void;
   joinBookClub: (clubId: string) => void;
+  createBookClub: (club: Omit<BookClub, 'id' | 'createdAt' | 'memberCount' | 'progress'>) => BookClub;
   joinWorkshop: (workshopId: string) => void;
+  createWorkshop: (
+    workshop: Omit<Workshop, 'id' | 'createdAt' | 'currentWriters'> & { currentWriters?: number },
+  ) => Workshop;
+  joinedClubs: Set<string>;
+  joinedWorkshops: Set<string>;
 }
 
 const CommunityContext = createContext<CommunityContextType | undefined>(undefined);
@@ -150,7 +156,7 @@ export function CommunityProvider({ children }: CommunityProviderProps) {
     }
   ]);
 
-  const [bookClubs] = useState<BookClub[]>([
+  const [bookClubs, setBookClubs] = useState<BookClub[]>([
     {
       id: 'club-1',
       name: 'Sci-Fi Explorers',
@@ -183,7 +189,11 @@ export function CommunityProvider({ children }: CommunityProviderProps) {
     }
   ]);
 
-  const [workshops] = useState<Workshop[]>([]);
+  const [workshops, setWorkshops] = useState<Workshop[]>([]);
+
+  // membership sets
+  const [joinedClubs, setJoinedClubs] = useState<Set<string>>(new Set());
+  const [joinedWorkshops, setJoinedWorkshops] = useState<Set<string>>(new Set());
 
   const [communityStats] = useState({
     activeMembers: 12847,
@@ -274,13 +284,40 @@ export function CommunityProvider({ children }: CommunityProviderProps) {
   };
 
   const joinBookClub = (clubId: string) => {
-    // Implementation for joining book club
-    console.log('Joining book club:', clubId);
+    setJoinedClubs(prev => new Set(prev).add(clubId));
+  };
+
+  const createBookClub = (club: Omit<BookClub, 'id' | 'createdAt' | 'memberCount' | 'progress'>) => {
+    const id = `club-${Date.now()}`;
+    const newClub: BookClub = {
+      ...club,
+      id,
+      memberCount: 1,
+      progress: 0,
+      createdAt: new Date(),
+    };
+    setBookClubs(prev => [...prev, newClub]);
+    setJoinedClubs(prev => new Set(prev).add(id));
+    return newClub;
   };
 
   const joinWorkshop = (workshopId: string) => {
-    // Implementation for joining workshop
-    console.log('Joining workshop:', workshopId);
+    setJoinedWorkshops(prev => new Set(prev).add(workshopId));
+  };
+
+  const createWorkshop = (
+    workshop: Omit<Workshop, 'id' | 'createdAt' | 'currentWriters'> & { currentWriters?: number },
+  ) => {
+    const id = `workshop-${Date.now()}`;
+    const newWorkshop: Workshop = {
+      ...workshop,
+      id,
+      currentWriters: 1,
+      createdAt: new Date(),
+    };
+    setWorkshops(prev => [...prev, newWorkshop]);
+    setJoinedWorkshops(prev => new Set(prev).add(id));
+    return newWorkshop;
   };
 
   const value: CommunityContextType = {
@@ -297,6 +334,10 @@ export function CommunityProvider({ children }: CommunityProviderProps) {
     followUser,
     joinBookClub,
     joinWorkshop,
+    createBookClub,
+    createWorkshop,
+    joinedClubs,
+    joinedWorkshops,
   };
 
   return (
