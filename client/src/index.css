@@ -6,25 +6,25 @@
 
 :root {
   /* Professional Brown & Yellow theme */
-  --background: #1e1407; /* rich espresso brown */
-  --foreground: #ffffff; /* crisp white text */
-  --card: #2a1908; /* deep chocolate brown */
-  --card-foreground: #ffffff;
-  --popover: #35210a; /* slightly lighter for popovers */
-  --popover-foreground: #ffffff;
-  --primary: #f3c761; /* refined golden yellow for primary accents */
-  --primary-foreground: #1e1407;
-  --secondary: #4a2e14; /* mid-tone roasted brown */
-  --secondary-foreground: #ffffff;
-  --muted: #5c3e1d; /* muted brown for subtle UI */
-  --muted-foreground: #e9d9c3;
-  --accent: #e0ac4f; /* complementary warm yellow */
-  --accent-foreground: #1e1407;
-  --destructive: #c04646;
-  --destructive-foreground: #ffffff;
-  --border: #3e2812;
-  --input: #3e2812;
-  --ring: #f3c761;
+  --background: 30 85% 5%; /* rich espresso brown */
+  --foreground: 0 0% 100%; /* crisp white text */
+  --card: 30 80% 8%; /* deep chocolate brown */
+  --card-foreground: 0 0% 100%;
+  --popover: 30 75% 12%; /* slightly lighter for popovers */
+  --popover-foreground: 0 0% 100%;
+  --primary: 43 85% 66%; /* refined golden yellow for primary accents */
+  --primary-foreground: 30 85% 5%;
+  --secondary: 30 70% 18%; /* mid-tone roasted brown */
+  --secondary-foreground: 0 0% 100%;
+  --muted: 30 65% 25%; /* muted brown for subtle UI */
+  --muted-foreground: 30 25% 85%;
+  --accent: 43 75% 58%; /* complementary warm yellow */
+  --accent-foreground: 30 85% 5%;
+  --destructive: 0 50% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 30 60% 20%;
+  --input: 30 60% 20%;
+  --ring: 43 85% 66%;
   --radius: 8px;
   --font-sans: "Inter", sans-serif;
   --font-serif: Georgia, serif;
@@ -32,25 +32,25 @@
 }
 
 .dark {
-  --background: hsl(30, 10%, 4%);
-  --foreground: hsl(30, 20%, 90%);
-  --card: hsl(240, 10%, 6%);
-  --card-foreground: hsl(0, 0%, 95%);
-  --popover: hsl(240, 10%, 6%);
-  --popover-foreground: hsl(0, 0%, 95%);
-  --primary: hsl(239, 69%, 65%);
-  --primary-foreground: hsl(0, 0%, 100%);
-  --secondary: hsl(30, 15%, 12%);
-  --secondary-foreground: hsl(0, 0%, 95%);
-  --muted: hsl(30, 10%, 15%);
-  --muted-foreground: hsl(240, 5%, 65%);
-  --accent: hsl(43, 85%, 58%);
-  --accent-foreground: hsl(240, 6%, 10%);
-  --destructive: hsl(0, 84%, 60%);
-  --destructive-foreground: hsl(0, 0%, 98%);
-  --border: hsl(30, 10%, 15%);
-  --input: hsl(30, 10%, 15%);
-  --ring: hsl(239, 69%, 65%);
+  --background: 30 10% 4%;
+  --foreground: 30 20% 90%;
+  --card: 240 10% 6%;
+  --card-foreground: 0 0% 95%;
+  --popover: 240 10% 6%;
+  --popover-foreground: 0 0% 95%;
+  --primary: 239 69% 65%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 30 15% 12%;
+  --secondary-foreground: 0 0% 95%;
+  --muted: 30 10% 15%;
+  --muted-foreground: 240 5% 65%;
+  --accent: 43 85% 58%;
+  --accent-foreground: 240 6% 10%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 30 10% 15%;
+  --input: 30 10% 15%;
+  --ring: 239 69% 65%;
 }
 
 @layer base {

@@ -57,7 +57,7 @@ export default function Login() {
         </div>
 
         {/* Login Form */}
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
+        <Card className="shadow-xl border-0 bg-[#2a1908] text-white">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl font-bold text-center">Sign In</CardTitle>
             <CardDescription className="text-center">
