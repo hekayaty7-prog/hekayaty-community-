@@ -60,10 +60,6 @@
 
   body {
     @apply font-sans antialiased text-foreground;
-    background-color: var(--background);
-    background-image: url('/src/assets/c79d8e3c-1594-4711-97bf-606619c10341.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+    background-color: hsl(var(--background));
   }
 }

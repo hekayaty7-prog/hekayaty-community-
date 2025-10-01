@@ -65,7 +65,7 @@ export function Layout({ children }: LayoutProps) {
         backgroundPosition: 'center',
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed'
-      } : { backgroundColor: 'hsl(var(--background))' }}
+      } : { backgroundColor: 'hsl(30, 85%, 5%)' }}
     >
       {shouldShowHeader && <NavigationHeader />}
       <main>
