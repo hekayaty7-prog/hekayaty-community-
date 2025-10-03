@@ -238,6 +238,47 @@ const ArtGallery = () => {
     }
   };
 
+  // Compress image before upload
+  const compressImage = (file: File): Promise<File> => {
+    return new Promise((resolve) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Calculate new dimensions (max 1920x1080)
+        const maxWidth = 1920;
+        const maxHeight = 1080;
+        let { width, height } = img;
+        
+        if (width > maxWidth || height > maxHeight) {
+          const ratio = Math.min(maxWidth / width, maxHeight / height);
+          width *= ratio;
+          height *= ratio;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Draw and compress
+        ctx?.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          if (blob) {
+            const compressedFile = new File([blob], file.name, {
+              type: 'image/jpeg',
+              lastModified: Date.now()
+            });
+            resolve(compressedFile);
+          } else {
+            resolve(file);
+          }
+        }, 'image/jpeg', 0.8); // 80% quality
+      };
+      
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const handleUpload = async () => {
     if (!selectedFile || !newArtwork.title) {
       alert('Please fill in all required fields and select an image');
@@ -256,11 +297,18 @@ const ArtGallery = () => {
     }
 
     setIsUploading(true);
+    setUploadProgress(10);
 
     try {
-      // Upload to Cloudinary
-      const cloudinaryResult = await uploadImageToCloudinary(selectedFile, 'gallery');
+      // Compress image first
+      setUploadProgress(20);
+      const compressedFile = await compressImage(selectedFile);
       
+      setUploadProgress(30);
+      // Upload to Cloudinary with progress
+      const cloudinaryResult = await uploadImageToCloudinary(compressedFile, 'gallery');
+      
+      setUploadProgress(80);
       // Save to database using mutation
       uploadMutation.mutate({
         title: newArtwork.title,
@@ -268,10 +316,13 @@ const ArtGallery = () => {
         image_url: cloudinaryResult.secure_url,
         category: newArtwork.category
       });
+      
+      setUploadProgress(100);
     } catch (error) {
       console.error('Upload failed:', error);
       alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -541,10 +592,31 @@ const ArtGallery = () => {
               </div>
 
               {/* Action Buttons */}
-              <div className="mt-6 flex justify-end space-x-3">
+              {/* Progress Bar */}
+              {isUploading && (
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <span>
+                      {uploadProgress < 30 ? 'Compressing image...' : 
+                       uploadProgress < 80 ? 'Uploading to cloud...' : 
+                       'Saving to database...'}
+                    </span>
+                    <span>{uploadProgress}%</span>
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-purple-600 to-pink-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    ></div>
+                  </div>
+                </div>
+              )}
+
+              <div className="flex justify-end space-x-3 pt-4">
                 <button
                   onClick={resetUploadModal}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  disabled={isUploading}
+                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>

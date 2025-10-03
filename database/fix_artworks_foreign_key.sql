@@ -1,0 +1,32 @@
+-- Fix artworks table foreign key constraint
+-- =====================================================
+
+-- First, drop the existing foreign key constraint
+ALTER TABLE public.artworks 
+DROP CONSTRAINT IF EXISTS artworks_artist_id_fkey;
+
+-- Add the correct foreign key constraint pointing to storyweave_profiles
+ALTER TABLE public.artworks 
+ADD CONSTRAINT artworks_artist_id_fkey 
+FOREIGN KEY (artist_id) 
+REFERENCES public.storyweave_profiles(id) 
+ON DELETE CASCADE;
+
+-- Verify the constraint was created correctly
+SELECT 
+    tc.constraint_name, 
+    tc.table_name, 
+    kcu.column_name, 
+    ccu.table_name AS foreign_table_name,
+    ccu.column_name AS foreign_column_name 
+FROM 
+    information_schema.table_constraints AS tc 
+    JOIN information_schema.key_column_usage AS kcu
+      ON tc.constraint_name = kcu.constraint_name
+      AND tc.table_schema = kcu.table_schema
+    JOIN information_schema.constraint_column_usage AS ccu
+      ON ccu.constraint_name = tc.constraint_name
+      AND ccu.table_schema = tc.table_schema
+WHERE tc.constraint_type = 'FOREIGN KEY' 
+  AND tc.table_name='artworks'
+  AND kcu.column_name='artist_id';
