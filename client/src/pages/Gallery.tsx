@@ -64,12 +64,10 @@ const ArtGallery = () => {
   const { data: dbArtworks = [], isLoading } = useQuery({
     queryKey: ['artworks'],
     queryFn: async () => {
+      // First, let's try a simple query without joins to see if basic fetch works
       const { data, error } = await supabase
         .from('artworks')
-        .select(`
-          *,
-          artist:storyweave_profiles!artworks_artist_id_fkey(username, display_name, avatar_url)
-        `)
+        .select('*')
         .order('created_at', { ascending: false });
 
       if (error) {
@@ -77,22 +75,35 @@ const ArtGallery = () => {
         throw error;
       }
 
-      // Transform data to match component interface
-      return data.map((artwork: any) => ({
-        id: artwork.id,
-        title: artwork.title,
-        artist: artwork.artist?.display_name || artwork.artist?.username || 'Unknown Artist',
-        imageUrl: artwork.image_url,
-        description: artwork.description || '',
-        likes: artwork.like_count || 0,
-        comments: artwork.comment_count || 0,
-        views: artwork.view_count || 0,
-        date: new Date(artwork.created_at).toISOString().split('T')[0],
-        category: artwork.medium || 'Digital Art',
-        userLiked: false,
-        reactions: { love: 0, wow: 0, fire: 0 },
-        userReactions: { love: [], wow: [], fire: [] }
-      }));
+      // For now, let's fetch artist info separately to avoid join issues
+      const artworksWithArtists = await Promise.all(
+        data.map(async (artwork: any) => {
+          // Fetch artist info separately
+          const { data: artistData } = await supabase
+            .from('storyweave_profiles')
+            .select('username, display_name, avatar_url')
+            .eq('id', artwork.artist_id)
+            .single();
+
+          return {
+            id: artwork.id,
+            title: artwork.title,
+            artist: artistData?.display_name || artistData?.username || 'Unknown Artist',
+            imageUrl: artwork.image_url,
+            description: artwork.description || '',
+            likes: artwork.like_count || 0,
+            comments: artwork.comment_count || 0,
+            views: artwork.view_count || 0,
+            date: new Date(artwork.created_at).toISOString().split('T')[0],
+            category: artwork.medium || 'Digital Art',
+            userLiked: false,
+            reactions: { love: 0, wow: 0, fire: 0 },
+            userReactions: { love: [], wow: [], fire: [] }
+          };
+        })
+      );
+
+      return artworksWithArtists;
     },
     enabled: !!currentUser,
     retry: 1
