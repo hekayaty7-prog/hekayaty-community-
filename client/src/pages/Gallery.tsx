@@ -75,7 +75,18 @@ const ArtGallery = () => {
         throw error;
       }
 
-      // For now, let's fetch artist info separately to avoid join issues
+      // Get current user's profile ID for like status
+      let currentProfile = null;
+      if (currentUser) {
+        const { data: profileData } = await supabase
+          .from('storyweave_profiles')
+          .select('id')
+          .eq('hekayaty_user_id', currentUser.id)
+          .single();
+        currentProfile = profileData;
+      }
+
+      // Fetch artist info and like status for each artwork
       const artworksWithArtists = await Promise.all(
         data.map(async (artwork: any) => {
           // Fetch artist info separately
@@ -84,6 +95,19 @@ const ArtGallery = () => {
             .select('username, display_name, avatar_url')
             .eq('id', artwork.artist_id)
             .single();
+
+          // Check if current user liked this artwork
+          let userLiked = false;
+          if (currentProfile) {
+            const { data: likeData } = await supabase
+              .from('artwork_likes')
+              .select('id')
+              .eq('artwork_id', artwork.id)
+              .eq('user_id', currentProfile.id)
+              .single();
+            
+            userLiked = !!likeData;
+          }
 
           return {
             id: artwork.id,
@@ -96,7 +120,7 @@ const ArtGallery = () => {
             views: artwork.view_count || 0,
             date: new Date(artwork.created_at).toISOString().split('T')[0],
             category: artwork.medium || 'Digital Art',
-            userLiked: false,
+            userLiked: userLiked,
             reactions: { love: 0, wow: 0, fire: 0 },
             userReactions: { love: [], wow: [], fire: [] }
           };
@@ -340,12 +364,102 @@ const ArtGallery = () => {
     });
   };
 
+  // Like artwork mutation
+  const likeMutation = useMutation({
+    mutationFn: async ({ artworkId, isLiked }: { artworkId: string; isLiked: boolean }) => {
+      if (!currentUser) throw new Error('User not authenticated');
+
+      // Get user's profile ID
+      const { data: profile } = await supabase
+        .from('storyweave_profiles')
+        .select('id')
+        .eq('hekayaty_user_id', currentUser.id)
+        .single();
+
+      if (!profile) throw new Error('User profile not found');
+
+      if (isLiked) {
+        // Remove like
+        const { error } = await supabase
+          .from('artwork_likes')
+          .delete()
+          .eq('artwork_id', artworkId)
+          .eq('user_id', profile.id);
+
+        if (error) throw error;
+
+        // Decrease like count
+        const { data: currentArtwork } = await supabase
+          .from('artworks')
+          .select('like_count')
+          .eq('id', artworkId)
+          .single();
+
+        const { error: updateError } = await supabase
+          .from('artworks')
+          .update({ like_count: Math.max(0, (currentArtwork?.like_count || 0) - 1) })
+          .eq('id', artworkId);
+
+        if (updateError) throw updateError;
+      } else {
+        // Add like
+        const { error } = await supabase
+          .from('artwork_likes')
+          .insert({
+            artwork_id: artworkId,
+            user_id: profile.id
+          });
+
+        if (error) throw error;
+
+        // Increase like count
+        const { data: currentArtwork } = await supabase
+          .from('artworks')
+          .select('like_count')
+          .eq('id', artworkId)
+          .single();
+
+        const { error: updateError } = await supabase
+          .from('artworks')
+          .update({ like_count: (currentArtwork?.like_count || 0) + 1 })
+          .eq('id', artworkId);
+
+        if (updateError) throw updateError;
+      }
+
+      return { artworkId, isLiked: !isLiked };
+    },
+    onSuccess: ({ artworkId, isLiked }) => {
+      // Update local state
+      setArtworks(prev => prev.map(artwork => 
+        artwork.id === artworkId 
+          ? { 
+              ...artwork, 
+              likes: isLiked ? artwork.likes + 1 : artwork.likes - 1,
+              userLiked: isLiked
+            }
+          : artwork
+      ));
+    },
+    onError: (error) => {
+      console.error('Like failed:', error);
+      alert('Failed to update like. Please try again.');
+    }
+  });
+
   const handleLike = (id: string) => {
     if (!currentUser) {
       alert('Please sign in to like artworks');
       return;
     }
-    alert('Like functionality will be implemented soon');
+
+    const artwork = artworks.find(art => art.id === id);
+    if (!artwork) return;
+
+    likeMutation.mutate({
+      artworkId: id,
+      isLiked: artwork.userLiked
+    });
   };
 
   const handleReaction = (id: string, reactionType: keyof typeof reactionEmojis) => {
