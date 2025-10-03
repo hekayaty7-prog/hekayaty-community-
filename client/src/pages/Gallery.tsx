@@ -68,11 +68,14 @@ const ArtGallery = () => {
         .from('artworks')
         .select(`
           *,
-          artist:storyweave_profiles(username, display_name, avatar_url)
+          artist:storyweave_profiles!artworks_artist_id_fkey(username, display_name, avatar_url)
         `)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching artworks:', error);
+        throw error;
+      }
 
       // Transform data to match component interface
       return data.map((artwork: any) => ({
@@ -91,7 +94,8 @@ const ArtGallery = () => {
         userReactions: { love: [], wow: [], fire: [] }
       }));
     },
-    enabled: !!currentUser
+    enabled: !!currentUser,
+    retry: 1
   });
 
   // Upload artwork mutation
@@ -104,13 +108,24 @@ const ArtGallery = () => {
     }) => {
       if (!currentUser) throw new Error('User not authenticated');
 
+      // Get the user's storyweave profile ID
+      const { data: profile, error: profileError } = await supabase
+        .from('storyweave_profiles')
+        .select('id')
+        .eq('hekayaty_user_id', currentUser.id)
+        .single();
+
+      if (profileError || !profile) {
+        throw new Error('User profile not found. Please complete your profile setup.');
+      }
+
       const { data, error } = await supabase
         .from('artworks')
         .insert({
           title: artworkData.title,
           description: artworkData.description,
           image_url: artworkData.image_url,
-          artist_id: currentUser.id,
+          artist_id: profile.id,
           medium: artworkData.category,
           tags: [],
           status: 'published'
