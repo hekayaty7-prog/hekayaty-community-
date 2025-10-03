@@ -119,15 +119,34 @@ const ArtGallery = () => {
     }) => {
       if (!currentUser) throw new Error('User not authenticated');
 
-      // Get the user's storyweave profile ID
-      const { data: profile, error: profileError } = await supabase
+      // Get or create the user's storyweave profile
+      let { data: profile, error: profileError } = await supabase
         .from('storyweave_profiles')
         .select('id')
         .eq('hekayaty_user_id', currentUser.id)
         .single();
 
+      // If profile doesn't exist, create it
       if (profileError || !profile) {
-        throw new Error('User profile not found. Please complete your profile setup.');
+        console.log('Creating new user profile...');
+        const { data: newProfile, error: createError } = await supabase
+          .from('storyweave_profiles')
+          .insert({
+            hekayaty_user_id: currentUser.id,
+            username: `user_${Date.now()}`,
+            display_name: currentUser.display_name || currentUser.username || 'Anonymous User',
+            avatar_url: currentUser.avatar_url || null,
+            bio: 'New community member'
+          })
+          .select('id')
+          .single();
+
+        if (createError) {
+          console.error('Failed to create profile:', createError);
+          throw new Error('Failed to create user profile. Please try again.');
+        }
+        
+        profile = newProfile;
       }
 
       const { data, error } = await supabase
@@ -152,7 +171,7 @@ const ArtGallery = () => {
       const newArtwork: Artwork = {
         id: data.id,
         title: data.title,
-        artist: currentUser?.display_name || currentUser?.username || 'Unknown Artist',
+        artist: currentUser?.display_name || currentUser?.username || 'Anonymous User',
         imageUrl: data.image_url,
         description: data.description || '',
         likes: 0,
