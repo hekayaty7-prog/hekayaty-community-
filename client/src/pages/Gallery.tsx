@@ -1,10 +1,13 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Heart, MessageCircle, Share2, Upload, X, User, Calendar, Eye, Star, Palette, Camera, Loader2 } from 'lucide-react';
 import backgroundImage from '@/assets/c79d8e3c-1594-4711-97bf-606619c10341.png';
 import { uploadImageToCloudinary, validateCloudinaryConfig } from '@/lib/cloudinary';
+import { useCommunity } from '@/contexts/SupabaseCommunityContext';
+import { supabase } from '@/lib/supabase';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 
 interface Artwork {
-  id: number;
+  id: string;
   title: string;
   artist: string;
   imageUrl: string;
@@ -35,14 +38,13 @@ interface NewArtwork {
 }
 
 const ArtGallery = () => {
-  const [artworks, setArtworks] = useState<Artwork[]>([]);
-
+  const { currentUser } = useCommunity();
+  const queryClient = useQueryClient();
+  
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [selectedArtwork, setSelectedArtwork] = useState<Artwork | null>(null);
   const [uploadPreview, setUploadPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
   const [newArtwork, setNewArtwork] = useState<NewArtwork>({
     title: '',
     artist: '',
@@ -50,6 +52,112 @@ const ArtGallery = () => {
     category: 'Digital Art'
   });
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Local upload states
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+
+  // Local artworks state (will be replaced with database data)
+  const [artworks, setArtworks] = useState<Artwork[]>([]);
+
+  // Fetch artworks from database
+  const { data: dbArtworks = [], isLoading } = useQuery({
+    queryKey: ['artworks'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('artworks')
+        .select(`
+          *,
+          artist:storyweave_profiles(username, display_name, avatar_url)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+
+      // Transform data to match component interface
+      return data.map((artwork: any) => ({
+        id: artwork.id,
+        title: artwork.title,
+        artist: artwork.artist?.display_name || artwork.artist?.username || 'Unknown Artist',
+        imageUrl: artwork.image_url,
+        description: artwork.description || '',
+        likes: artwork.like_count || 0,
+        comments: artwork.comment_count || 0,
+        views: artwork.view_count || 0,
+        date: new Date(artwork.created_at).toISOString().split('T')[0],
+        category: artwork.medium || 'Digital Art',
+        userLiked: false,
+        reactions: { love: 0, wow: 0, fire: 0 },
+        userReactions: { love: [], wow: [], fire: [] }
+      }));
+    },
+    enabled: !!currentUser
+  });
+
+  // Upload artwork mutation
+  const uploadMutation = useMutation({
+    mutationFn: async (artworkData: {
+      title: string;
+      description: string;
+      image_url: string;
+      category: string;
+    }) => {
+      if (!currentUser) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('artworks')
+        .insert({
+          title: artworkData.title,
+          description: artworkData.description,
+          image_url: artworkData.image_url,
+          artist_id: currentUser.id,
+          medium: artworkData.category,
+          tags: [],
+          status: 'published'
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      // Add to local state immediately
+      const newArtwork: Artwork = {
+        id: data.id,
+        title: data.title,
+        artist: currentUser?.display_name || currentUser?.username || 'Unknown Artist',
+        imageUrl: data.image_url,
+        description: data.description || '',
+        likes: 0,
+        comments: 0,
+        views: 0,
+        date: new Date(data.created_at).toISOString().split('T')[0],
+        category: data.medium || 'Digital Art',
+        userLiked: false,
+        reactions: { love: 0, wow: 0, fire: 0 },
+        userReactions: { love: [], wow: [], fire: [] }
+      };
+      setArtworks(prev => [newArtwork, ...prev]);
+      
+      queryClient.invalidateQueries({ queryKey: ['artworks'] });
+      resetUploadModal();
+      setIsUploading(false);
+      alert('Artwork uploaded successfully!');
+    },
+    onError: (error) => {
+      console.error('Upload failed:', error);
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      setIsUploading(false);
+    }
+  });
+
+  // Load database artworks into local state
+  useEffect(() => {
+    if (dbArtworks.length > 0) {
+      setArtworks(dbArtworks);
+    }
+  }, [dbArtworks]);
 
   const categories = ['Digital Art', 'Painting', 'Photography', 'Sculpture', 'Abstract', 'Portrait', 'Landscape'];
   const reactionEmojis = {
@@ -86,8 +194,13 @@ const ArtGallery = () => {
   };
 
   const handleUpload = async () => {
-    if (!selectedFile || !newArtwork.title || !newArtwork.artist) {
+    if (!selectedFile || !newArtwork.title) {
       alert('Please fill in all required fields and select an image');
+      return;
+    }
+
+    if (!currentUser) {
+      alert('Please sign in to upload artwork');
       return;
     }
 
@@ -98,40 +211,22 @@ const ArtGallery = () => {
     }
 
     setIsUploading(true);
-    setUploadProgress(0);
 
     try {
       // Upload to Cloudinary
       const cloudinaryResult = await uploadImageToCloudinary(selectedFile, 'gallery');
       
-      // Create artwork object with Cloudinary URL
-      const artwork: Artwork = {
-        id: artworks.length + 1,
-        ...newArtwork,
-        imageUrl: cloudinaryResult.secure_url,
-        likes: 0,
-        comments: 0,
-        views: 0,
-        date: new Date().toISOString().split('T')[0],
-        userLiked: false,
-        reactions: { love: 0, wow: 0, fire: 0 },
-        userReactions: { love: [], wow: [], fire: [] }
-      };
-
-      // Add to artworks list
-      setArtworks([artwork, ...artworks]);
-      
-      // Show success message
-      alert('Artwork uploaded successfully!');
-      
-      // Reset form
-      resetUploadModal();
+      // Save to database using mutation
+      uploadMutation.mutate({
+        title: newArtwork.title,
+        description: newArtwork.description,
+        image_url: cloudinaryResult.secure_url,
+        category: newArtwork.category
+      });
     } catch (error) {
       console.error('Upload failed:', error);
       alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
       setIsUploading(false);
-      setUploadProgress(0);
     }
   };
 
@@ -149,52 +244,20 @@ const ArtGallery = () => {
     });
   };
 
-  const handleLike = (id: number) => {
-    setArtworks(artworks.map(art => 
-      art.id === id 
-        ? { ...art, likes: art.userLiked ? art.likes - 1 : art.likes + 1, userLiked: !art.userLiked }
-        : art
-    ));
+  const handleLike = (id: string) => {
+    if (!currentUser) {
+      alert('Please sign in to like artworks');
+      return;
+    }
+    alert('Like functionality will be implemented soon');
   };
 
-  const handleReaction = (id: number, reactionType: keyof typeof reactionEmojis) => {
-    // Mock user ID - in real app, get from authentication
-    const currentUserId = 'user-123';
-    
-    setArtworks(artworks.map(art => {
-      if (art.id !== id) return art;
-      
-      // Check if user already reacted with this type
-      const hasUserReacted = art.userReactions[reactionType].includes(currentUserId);
-      
-      if (hasUserReacted) {
-        // User already reacted - remove their reaction
-        return {
-          ...art,
-          reactions: {
-            ...art.reactions,
-            [reactionType]: Math.max(0, art.reactions[reactionType] - 1)
-          },
-          userReactions: {
-            ...art.userReactions,
-            [reactionType]: art.userReactions[reactionType].filter(userId => userId !== currentUserId)
-          }
-        };
-      } else {
-        // User hasn't reacted - add their reaction
-        return {
-          ...art,
-          reactions: {
-            ...art.reactions,
-            [reactionType]: art.reactions[reactionType] + 1
-          },
-          userReactions: {
-            ...art.userReactions,
-            [reactionType]: [...art.userReactions[reactionType], currentUserId]
-          }
-        };
-      }
-    }));
+  const handleReaction = (id: string, reactionType: keyof typeof reactionEmojis) => {
+    if (!currentUser) {
+      alert('Please sign in to react to artworks');
+      return;
+    }
+    alert('Reaction functionality will be implemented soon');
   };
 
   return (
